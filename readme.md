@@ -1,3 +1,3 @@
 # **GMaker**
-Game Maker \n
+Game Maker /n
 A tkinter game maker.
