@@ -49,7 +49,7 @@ def load():
         button.configure(command=lambda name = i['name']: set(name))
     ttk.Button(root, text='+', command=add_sprite).pack(anchor='w')
     ttk.Button(root, text=langdata['openbt1'], command=delete).pack(anchor='w')
-    ttk.Button(root, text=langdata['openbt2'], command=code).pack(anchor='w')
+    ttk.Button(root, text=langdata['openbt2'], command=TextEditor).pack(anchor='w')
     ttk.Button(root, text=langdata['openbt3']).pack(anchor='w')
     # print(data) - debugging stuff yea
 
@@ -160,36 +160,81 @@ def button_deleter(tab):
     for widget in tab.winfo_children():
         if isinstance(widget, ttk.Button):
             widget.destroy()
+            
+# this is the main element of coding thing
+class TextEditor:
+    def __init__(self):
+        self.root = Toplevel()
+        self.root.title("Text")
+        self.root.geometry("600x500")
 
-def code():
-    global ct
-    ct = Toplevel()
-    ct.geometry('500x300')
-    cm = Menu(ct)
-    cc = Menu(cm, tearoff=0)
-    cm.add_cascade(label=langdata['code1'], menu=cc)
-    cc.add_command(label=langdata['code2'], command=logic)
-    cc.add_command(label=langdata['code3'], command=game)
-    ct.config(menu=cm)
-    global category
-    category = ttk.Label(ct, text=langdata['code2'])
-    category.pack()
+        cm = Menu(self.root)
+        cc = Menu(cm, tearoff=0)
+        cm.add_cascade(label=langdata['code2'], menu=cc)
+        self.root.config(menu=cm)
+        
+        # widget
+        self.text_area = Text(self.root, wrap='word')
+        self.text_area.pack(expand=True, fill='both')
+
+        # scrollbar
+        self.scrollbar = ttk.Scrollbar(self.text_area)
+        self.scrollbar.pack(side='right', fill='y')
+        self.text_area.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.text_area.yview)
+
+        # file menu
+        self.menu_bar = Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+        self.file_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="파일", menu=self.file_menu)
+        # self.file_menu.add_command(label="열기", command=self.open_file)
+        self.file_menu.add_command(label=langdata['save'], command=self.save_file)
+        # self.file_menu.add_command(label="종료", command=self.root.quit)
+
+    def open_file(self, file_path):
+        self.text_area.delete("1.0", END)
+        with open(file_path, "r", encoding="utf-8") as file:
+            self.text_area.insert("1.0", file.read())
+        self.root.title(f"텍스트 에디터 - {file_path}")
+
+    def save_file(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(self.text_area.get("1.0", END))
+            self.root.title(f"텍스트 에디터 - {file_path}")
+
+# def code():
+#     global ct
+#     ct = Toplevel()
+#     ct.geometry('500x300')
+#     cm = Menu(ct)
+#     cc = Menu(cm, tearoff=0)
+#     cm.add_cascade(label=langdata['code1'], menu=cc)
+#     cc.add_command(label=langdata['code2'], command=logic)
+#     cc.add_command(label=langdata['code3'], command=game)
+#     ct.config(menu=cm)
+#     global category
+#     category = ttk.Label(ct, text=langdata['code2'])
+#     category.pack()
 
 
 # all the buttons in the diffrent categories will be deleted
-def logic():
-    button_deleter(ct)
-    category.config(text=langdata['code2'])
-    # remember to add the command for the buttons later!
-    ttk.Button(ct, text=langdata['code5'], command=ifcode).pack()
+# def logic():
+#     button_deleter(ct)
+#     category.config(text=langdata['code2'])
+#     # remember to add the command for the buttons later!
+#     ttk.Button(ct, text=langdata['code5'], command=ifcode).pack()
 
-def game():
-    button_deleter(ct)
-    category.config(text=langdata['code3'])
-    ttk.Button(ct, text=langdata['code6']).pack()
+# def game():
+#     button_deleter(ct)
+#     category.config(text=langdata['code3'])
+#     ttk.Button(ct, text=langdata['code6']).pack()
 
-def ifcode():
-    pass
+# def ifcode():
+#     pass
 
     
 
