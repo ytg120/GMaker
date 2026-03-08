@@ -1,3 +1,4 @@
 # **GMaker**
-Game Maker /n
-A tkinter game maker.
+Game Maker
+
+A python tkinter game maker.
