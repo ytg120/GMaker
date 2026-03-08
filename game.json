@@ -1,0 +1,9 @@
+{
+    "name": "NewGame",
+    "width": 1280,
+    "height": 720,
+    "bg": {
+        "color": "white"
+    },
+    "sprites": {}
+}

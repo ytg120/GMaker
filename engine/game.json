@@ -1,0 +1,34 @@
+{
+    "name": "NewGame",
+    "width": 1280,
+    "height": 720,
+    "bg": {
+        "color": "white"
+    },
+    "sprites": {
+        "text": {
+            "name": "text",
+            "type": "text",
+            "data": "\uac1c\ubc1cengine",
+            "xloc": 5,
+            "yloc": 7,
+            "position": 1
+        },
+        "img": {
+            "name": "img",
+            "type": "image",
+            "data": "1.png",
+            "xloc": 5,
+            "yloc": 3,
+            "position": 1
+        },
+        "\ub098\uc774\uc2a4": {
+            "name": "\ub098\uc774\uc2a4",
+            "type": "text",
+            "data": "apple\u3147",
+            "xloc": 7,
+            "yloc": 7,
+            "position": 1
+        }
+    }
+}
