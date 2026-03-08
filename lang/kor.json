@@ -22,5 +22,6 @@
     "code5":"조건문",
     "code6":"XY 이동",
     "saveerror": "데이터 저장에 실패했습니다.",
-    "nojson": "선택한 폴더에 game.json이 없습니다."
+    "nojson": "선택한 폴더에 game.json이 없습니다.",
+    "file": "파일"
 }

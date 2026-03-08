@@ -187,10 +187,10 @@ class TextEditor:
         self.menu_bar = Menu(self.root)
         self.root.config(menu=self.menu_bar)
         self.file_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="파일", menu=self.file_menu)
-        # self.file_menu.add_command(label="열기", command=self.open_file)
+        self.menu_bar.add_cascade(label=langdata['file'], menu=self.file_menu)
+        # self.file_menu.add_command(label=langdata['open'], command=self.open_file)
         self.file_menu.add_command(label=langdata['save'], command=self.save_file)
-        # self.file_menu.add_command(label="종료", command=self.root.quit)
+        # self.file_menu.add_command(label=langdata['quit'], command=self.root.quit)
 
     def open_file(self, file_path):
         self.text_area.delete("1.0", END)
@@ -203,7 +203,7 @@ class TextEditor:
         if file_path:
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(self.text_area.get("1.0", END))
-            self.root.title(f"텍스트 에디터 - {file_path}")
+            # self.root.title(f"텍스트 에디터 - {file_path}")
 
 # def code():
 #     global ct
