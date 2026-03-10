@@ -48,48 +48,46 @@ def load():
         button.pack(anchor='w')
         button.configure(command=lambda name = i['name']: set(name))
     ttk.Button(root, text='+', command=add_sprite).pack(anchor='w')
-    ttk.Button(root, text=langdata['openbt1'], command=delete).pack(anchor='w')
-    ttk.Button(root, text=langdata['openbt2'], command=TextEditor).pack(anchor='w')
-    ttk.Button(root, text=langdata['openbt3']).pack(anchor='w')
-    # print(data) - debugging stuff yea
+    ttk.Button(root, text=langdata['delete'], command=delete).pack(anchor='w')
+    ttk.Button(root, text=langdata['code'], command=TextEditor).pack(anchor='w')
+    ttk.Button(root, text=langdata['edit']).pack(anchor='w')
 
 def add_sprite():
     global asktab
     asktab = Toplevel(root)
     asktab.geometry('200x300')
-    Label(asktab, text=langdata['asktab1']).pack()
+    Label(asktab, text=langdata['sprite_name']).pack()
     nameentry = Entry(asktab)
     nameentry.pack(anchor='w')
+    global dataentry
     def txt_selected():
         global type
         type = 'text'
+        Label(asktab, text=langdata['txtdata']).pack()
+        dataentry = ttk.Entry(asktab)
+        dataentry.pack(anchor='w')
     def img_selected():
         global type
         type = 'image'
+        Label(asktab, text=langdata['imgdata']).pack()
+        dataentry = ttk.Entry(asktab)
+        dataentry.pack(anchor='w')
     type = 'text'
-    txt = ttk.Radiobutton(asktab, text=langdata['asktab2'], command=txt_selected, value=1)
-    img = ttk.Radiobutton(asktab, text=langdata['asktab3'], command=img_selected, value=2)
+    txt = ttk.Radiobutton(asktab, text=langdata['text'], command=txt_selected, value=1)
+    img = ttk.Radiobutton(asktab, text=langdata['image'], command=img_selected, value=2)
     txt.pack(anchor='w')
     img.pack(anchor='w')
-    Label(asktab, text=langdata['asktab4']).pack()
-    xentry = ttk.Entry(asktab)
-    xentry.pack(anchor='w')
-    Label(asktab, text=langdata['asktab5']).pack()
-    yentry = ttk.Entry(asktab)
-    yentry.pack(anchor='w')
-    Label(asktab, text=langdata['asktab6']).pack()
-    dataentry = ttk.Entry(asktab)
-    dataentry.pack(anchor='w')
-    ttk.Button(asktab, text=langdata['asktab7'], command=lambda: create_sprite(nameentry.get(), type, dataentry.get(), xentry.get(), yentry.get())).pack()
 
-def create_sprite(name, type, data2, xloc, yloc):
+    # check if name uses only ascii
+    if all(ord(c) < 128 for c in nameentry.get()):
+        ttk.Button(asktab, text=langdata['create'], command=lambda: create_sprite(nameentry.get(), type, dataentry.get())).pack()
+    else:
+        messagebox.showerror('Error.', langdata['ascii_error'])
+def create_sprite(name, type, data2):
     data['sprites'][name] = {
         "name": name,
         "type": type,
-        "data": data2,
-        "xloc": int(xloc),
-        "yloc": int(yloc),
-        "position": 1}
+        "data": data2}
     asktab.destroy()
     button = ttk.Button(root, text=name)
     bi[name] = button
@@ -99,14 +97,14 @@ def create_sprite(name, type, data2, xloc, yloc):
 
 
 def set(name):
-    global buttonset
-    buttonset = name
+    global button_set
+    button_set = name
 
 
 def delete():
-    bi[buttonset].destroy()
-    del bi[buttonset]
-    del data['sprites'][buttonset]
+    bi[button_set].destroy()
+    del bi[button_set]
+    del data['sprites'][button_set]
     save()
 
 def credit():
@@ -148,7 +146,6 @@ def new_project():
         {
         }
     }
-
     with open(os.path.join(project_path, "game.json"), "w", encoding="utf-8") as f:
         json.dump(game_template, f, indent=4)
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'Font.ttf')), os.path.join(project_path, 'data', 'Font.ttf'))
@@ -160,82 +157,57 @@ def button_deleter(tab):
     for widget in tab.winfo_children():
         if isinstance(widget, ttk.Button):
             widget.destroy()
-            
+
 # this is the main element of coding thing
 class TextEditor:
     def __init__(self):
         self.root = Toplevel()
         self.root.title("Text Editor")
         self.root.geometry("600x500")
-
-        cm = Menu(self.root)
-        cc = Menu(cm, tearoff=0)
-        cm.add_cascade(label=langdata['code2'], menu=cc)
-        self.root.config(menu=cm)
-        
         # widget
         self.text_area = Text(self.root, wrap='word')
         self.text_area.pack(expand=True, fill='both')
-
         # scrollbar
         self.scrollbar = ttk.Scrollbar(self.text_area)
         self.scrollbar.pack(side='right', fill='y')
         self.text_area.config(yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.text_area.yview)
+        try:
+            self.text_area.insert("1.0", data['sprites'][button_set]['code'])
+        except:
+            pass
+
 
         # file menu
         self.menu_bar = Menu(self.root)
         self.root.config(menu=self.menu_bar)
+        self.code_menu = Menu(self.menu_bar, tearoff=0)
+        # movement
+        self.menu_bar.add_cascade(label=langdata['code3'], menu=self.code_menu)
+        # set xy
+        self.code_menu.add_command(label=langdata['code6'], command=self.xy)
+
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=langdata['file'], menu=self.file_menu)
-        # self.file_menu.add_command(label=langdata['open'], command=self.open_file)
         self.file_menu.add_command(label=langdata['save'], command=self.save_file)
-        # self.file_menu.add_command(label=langdata['quit'], command=self.root.quit)
-
-    def open_file(self, file_path):
-        self.text_area.delete("1.0", END)
-        with open(file_path, "r", encoding="utf-8") as file:
-            self.text_area.insert("1.0", file.read())
 
     def save_file(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".txt",
-                                                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
-        if file_path:
-            with open(file_path, "w", encoding="utf-8") as file:
-                file.write(self.text_area.get("1.0", END))
-            # self.root.title(f"텍스트 에디터 - {file_path}")
+        data['sprites'][button_set]['code'] = self.text_area.get("1.0", "end-1c")
+        save() 
+    # xy
+    def xy(self):
+        xytab = Toplevel(self.root)
+        ttk.Label(xytab, text=langdata['sprite_x']).pack()
+        xentry = ttk.Entry(xytab)
+        xentry.pack(anchor='w')
+        ttk.Label(xytab, text=langdata['sprite_y']).pack()
+        yentry = ttk.Entry(xytab)
+        yentry.pack(anchor='w')
+        ttk.Button(xytab, text=langdata['xy3'], command=lambda: self.set_xy(xentry.get(), yentry.get(), xytab)).pack()
 
-# def code():
-#     global ct
-#     ct = Toplevel()
-#     ct.geometry('500x300')
-#     cm = Menu(ct)
-#     cc = Menu(cm, tearoff=0)
-#     cm.add_cascade(label=langdata['code1'], menu=cc)
-#     cc.add_command(label=langdata['code2'], command=logic)
-#     cc.add_command(label=langdata['code3'], command=game)
-#     ct.config(menu=cm)
-#     global category
-#     category = ttk.Label(ct, text=langdata['code2'])
-#     category.pack()
-
-
-# all the buttons in the diffrent categories will be deleted
-# def logic():
-#     button_deleter(ct)
-#     category.config(text=langdata['code2'])
-#     # remember to add the command for the buttons later!
-#     ttk.Button(ct, text=langdata['code5'], command=ifcode).pack()
-
-# def game():
-#     button_deleter(ct)
-#     category.config(text=langdata['code3'])
-#     ttk.Button(ct, text=langdata['code6']).pack()
-
-# def ifcode():
-#     pass
-
-    
+    def set_xy(self, x, y, window):
+        self.text_area.insert(INSERT, f"{button_set}.xy_set({x}, {y})\n")
+        window.destroy()
 
 def save():
     try:
@@ -245,7 +217,6 @@ def save():
     except Exception:
         messagebox.showerror('Error', str(langdata['saveerror']))
 
-
 def lang_select(lang):
     global language
     language = lang
@@ -253,40 +224,10 @@ def lang_select(lang):
         global langdata
         langdata = json.load(f)
 
-
-
-
 def start_main():
     global root
     root = Tk()
     root.title("GMAKER")
-    # try to set a window icon; iconbitmap only works reliably on Windows
-    icofile = get_resource_path(os.path.join('Graphics', 'Logo.ico'))
-    if os.path.exists(icofile):
-        try:
-            # on Windows this will set the icon; on Linux/Tk, ICO may raise TclError
-            root.iconbitmap(icofile)
-        except Exception:
-            # fallback: use a PNG image via iconphoto which is cross‑platform
-            pngfile = get_resource_path(os.path.join('Graphics', 'Logo.png'))
-            if os.path.exists(pngfile):
-                try:
-                    img = ImageTk.PhotoImage(file=pngfile)
-                    root.iconphoto(True, img)
-                    # keep a reference so Tk doesn't garbage collect it
-                    root._iconimg = img
-                except Exception:
-                    pass
-    else:
-        # if the ico file isn't present or accessible, attempt the png fallback
-        pngfile = get_resource_path(os.path.join('Graphics', 'Logo.png'))
-        if os.path.exists(pngfile):
-            try:
-                img = ImageTk.PhotoImage(file=pngfile)
-                root.iconphoto(True, img)
-                root._iconimg = img
-            except Exception:
-                pass
     root.geometry('300x300')
     menubar = Menu(root)
     editmenu = Menu(menubar, tearoff=0)
@@ -294,9 +235,6 @@ def start_main():
     editmenu.add_command(label=langdata['new'], command=new_project)
     editmenu.add_command(label=langdata['credit'], command=credit)
     editmenu.add_command(label=langdata['save'], command=save)
-        # editmenu.add_command(label='Paint', command=Paint)
-    # editmenu.add_command(label='Code', command=open_webview)
-    # used before for devlelopment but not now
     menubar.add_cascade(label=langdata['menu'], menu=editmenu)
     root.config(menu=menubar)
 
