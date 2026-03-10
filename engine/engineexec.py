@@ -39,4 +39,4 @@ class Sprites:
             self.data = gamedata[self.name]['text']
             self.imgrect = gamedata[self.name]['imgrect']
     def set_xy(self, x, y):
-
+        pass
