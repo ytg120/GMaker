@@ -1,14 +1,6 @@
-import os
-import json
-import pygame
-import ctypes 
-from pygame.locals import *
-import sys
-import time
-import threading
-import random
+import pygame, time, sys, os
 
-def get_resource_path(filename):
+def path_getter(filename):
     if getattr(sys, 'frozen', False):
 
         base_path = os.path.dirname(sys.executable)
@@ -17,19 +9,16 @@ def get_resource_path(filename):
     
     return os.path.join(base_path, filename)
 
-json_path = get_resource_path('game.json')
-with open(json_path, 'r', encoding='utf-8') as f:
-    try:
-        filedata = json.load(f)
-    except:
-        ctypes.windll.user32.MessageBoxW(0, "No game.json file found", "Error", 0)
+def main(jsondata):
+    global clock, name, width, height, filedata, gamedata, colorlist, displaysurf, bg_color, color, keys, text
+    gamedata = {}
+    filedata = jsondata
 
-# set the pygame vars.
-clock = pygame.time.Clock()
-name = filedata['name']
-width = filedata['width']
-height = filedata['height']
-colorlist = {
+    # set the pygame vars.
+    name = filedata['name']
+    width = filedata['width']
+    height = filedata['height']
+    colorlist = {
     'white': (255, 255, 255),
     'red': (255, 0, 0),
     'orange': (255, 50, 0),
@@ -38,70 +27,49 @@ colorlist = {
     'blue': (0, 0, 255),
     'purple': (100, 0, 255),
     'black': (0, 0, 0)
+    }
+    # pygame init
+    clock = pygame.time.Clock()
+    pygame.init()
+    pygame.display.set_caption(name)
+    displaysurf = pygame.display.set_mode((int(width), int(height)), 0, 32)
+    keys = pygame.key.get_pressed()
+    text = pygame.font.Font(path_getter(os.path.join('data', 'Font.ttf')), 70)
 
-}
-
-pygame.init()
-pygame.display.set_caption(name)
-displaysurf = pygame.display.set_mode((int(width), int(height)), 0, 32)
-
-i = filedata['bg']
-if 'color' in i:
-    global color
-    color = i['color']
-
-gui = pygame.font.Font(get_resource_path(os.path.join('data', 'Font.ttf')), 70)
-
-texts = {}
-images = {}
-
-keys = pygame.key.get_pressed()
-# position 0 = left, position 1 = center
-
-def time(num):
-    time.sleep(num)
-
-def hide():
-    pygame.sprite.Sprite.kill()
+    # setting the bg color
+    bg_color = filedata['bg']
+    if 'color' in bg_color:
+        color = colorlist[bg_color['color']]
+    else:
+        color = (255, 255, 255)
 
 
-# data loading
-for sprite in filedata['sprites'].values():
-    # set the xy pos
-    global spritex
-    global spritey
-    spritex = sprite['xloc']
-    spritey = sprite['yloc']
-    if sprite['type'] == 'text':
-        text = gui.render(sprite['data'], True, colorlist['black'])
-        textrect = text.get_rect()
-        pos = int(sprite['position'])
-        if pos == 0:
-            textrect.topleft = ((width/10)*sprite['xloc'], (height/10)*sprite['yloc'])
-        else:
-            textrect.center = ((width/10)*sprite['xloc'], (height/10)*sprite['yloc'])
-        texts[sprite['name']] = {'text': text, 'textrect': textrect}
 
-    elif sprite['type'] == 'image':
-        img = pygame.image.load(get_resource_path(os.path.join('data', str(sprite['data'])))).convert_alpha()
-        imgrect = img.get_rect()
-        imgrect.center = ((width/10)*sprite['xloc'], (height/10)*sprite['yloc'])
-        images[sprite['name']] = {'img': img, 'imgrect': imgrect}
-    try:
-        exec(sprite['code'])
-    except:
-        print('exec err')
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        displaysurf.fill(color)
+        pygame.display.update()
+        clock.tick(60)
 
-while True:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-    displaysurf.fill(colorlist[color])
-    for sprite in texts.values():
-        displaysurf.blit(sprite['text'], sprite['textrect'])
-    for sprite in images.values():
-        displaysurf.blit(sprite['img'], sprite['imgrect'])
+class Sprites:
+    def __init__(self, type, name):
+        self.type = type
+        self.name = name
+        if self.type == 'image':
+            self.data = pygame.image.load(path_getter(os.path.join('data', str(filedata['sprites'][self.name]['data']))))
+            self.rect = self.data.get_rect()
+            self.rect.center = (width/2, height/2)
+        elif self.type == 'text':
+            self.data = text.render(filedata['sprites'][self.name]['data'], True, colorlist['black'])
+            self.rect = self.data.get_rect()
+            self.rect.center = (width/2, height/2)
+        displaysurf.blit(self.data, self.rect)
 
+    def set_xy(self, x, y):
+        self.rect.center = (width/10*x, height/10*y)
 
-    pygame.display.update() 
+    def if_key_pressed(self, key):
+        return keys[key]

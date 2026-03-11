@@ -39,7 +39,7 @@ def load():
         data = json.load(f)
         count = 1
     # there may be buttons that are already there, so I will use this.
-    button_deleter(root)
+    deleter(root, ttk.Button)
     for i in data['sprites'].values():
         global button
         button = ttk.Button(root, text=i['name'])
@@ -59,15 +59,17 @@ def add_sprite():
     Label(asktab, text=langdata['sprite_name']).pack()
     nameentry = Entry(asktab)
     nameentry.pack(anchor='w')
-    global dataentry
+    global dataentry, type
     def txt_selected():
-        global type
+        global dataentry, type
+        deleter(asktab, ttk.Entry)
         type = 'text'
         Label(asktab, text=langdata['txtdata']).pack()
         dataentry = ttk.Entry(asktab)
         dataentry.pack(anchor='w')
     def img_selected():
-        global type
+        global dataentry, type
+        deleter(asktab, ttk.Entry)
         type = 'image'
         Label(asktab, text=langdata['imgdata']).pack()
         dataentry = ttk.Entry(asktab)
@@ -78,23 +80,24 @@ def add_sprite():
     txt.pack(anchor='w')
     img.pack(anchor='w')
 
-    # check if name uses only ascii
-    if all(ord(c) < 128 for c in nameentry.get()):
-        ttk.Button(asktab, text=langdata['create'], command=lambda: create_sprite(nameentry.get(), type, dataentry.get())).pack()
+    # checks if name uses only ascii
+    
+    ttk.Button(asktab, text=langdata['create'], command=lambda: create_sprite(nameentry.get(), type, dataentry.get())).pack()
+
+def create_sprite(name, type, data2):
+    if name.isascii() == True:
+        data['sprites'][name] = {
+            "name": name,
+            "type": type,
+            "data": data2}
+        asktab.destroy()
+        button = ttk.Button(root, text=name)
+        bi[name] = button
+        button.pack(anchor='w')
+        button.configure(command=lambda name=name: set(name))
+        save()
     else:
         messagebox.showerror('Error.', langdata['ascii_error'])
-def create_sprite(name, type, data2):
-    data['sprites'][name] = {
-        "name": name,
-        "type": type,
-        "data": data2}
-    asktab.destroy()
-    button = ttk.Button(root, text=name)
-    bi[name] = button
-    button.pack(anchor='w')
-    button.configure(command=lambda name=name: set(name))
-    save()
-
 
 def set(name):
     global button_set
@@ -153,9 +156,9 @@ def new_project():
     print("complete:", project_path)
     
 # this place was for paint app, but deleted cuz its useless(for now)
-def button_deleter(tab):
+def deleter(tab, widget_type):
     for widget in tab.winfo_children():
-        if isinstance(widget, ttk.Button):
+        if isinstance(widget, widget_type):
             widget.destroy()
 
 # this is the main element of coding thing
