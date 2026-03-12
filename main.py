@@ -4,7 +4,6 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
 import json
-from tkinter.colorchooser import askcolor
 import sys
 import shutil
 
@@ -163,13 +162,14 @@ def new_project():
     with open(os.path.join(project_path, "game.json"), "w", encoding="utf-8") as f:
         json.dump(game_template, f, indent=4)
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'Font.ttf')), os.path.join(project_path, 'data', 'Font.ttf'))
-    # shutil.copy(get_resource_path(os.path.join('engine', 'engine.exe')), os.path.join(project_path, 'engine.exe')) 
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'engine.py')), os.path.join(project_path, 'data', 'engine.py'))
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'README.txt')), os.path.join(project_path, 'data', 'README.txt'))
-    shutil.copy(get_resource_path(os.path.join('engine', 'executor.py')), os.path.join(project_path, 'executor.py'))
+    answer = messagebox.askquestion('Platform', langdata['platform'])
+    if answer == 'Windows':
+        shutil.copy(get_resource_path(os.path.join('engine', 'executor.exe')), os.path.join(project_path, 'executor.exe'))
+    if answer == 'Linux':
+        shutil.copy(get_resource_path(os.path.join('engine', 'executor.sh')), os.path.join(project_path, 'executor.sh'))
     print("complete:", project_path)
-    
-# this place was for paint app, but deleted cuz its useless(for now)
 def deleter(tab, widget_type):
     for widget in tab.winfo_children():
         if isinstance(widget, widget_type):

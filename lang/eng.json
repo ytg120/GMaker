@@ -28,5 +28,6 @@
     "file":"File",
     "xy1":"X Coordinate",
     "xy2":"Y Coordinate",
-    "xy3":"Set"
+    "xy3":"Set",
+    "platform":"Do you want to use the Windows version? (choose No for Linux version)"
 }
