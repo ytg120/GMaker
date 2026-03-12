@@ -89,7 +89,8 @@ def create_sprite(name, type, data2):
         data['sprites'][name] = {
             "name": name,
             "type": type,
-            "data": data2}
+            "data": data2,
+            "code": f"{name} = Sprite('{data2}')"}
         asktab.destroy()
         button = ttk.Button(root, text=name)
         bi[name] = button
