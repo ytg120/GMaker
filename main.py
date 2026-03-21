@@ -164,11 +164,7 @@ def new_project():
         json.dump(game_template, f, indent=4)
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'Font.ttf')), os.path.join(project_path, 'data', 'Font.ttf'))
     shutil.copy(get_resource_path(os.path.join('engine', 'data', 'README.txt')), os.path.join(project_path, 'data', 'README.txt'))
-    answer = messagebox.askquestion('Platform', langdata['platform'])
-    # if answer == 'yes':
     shutil.copy(get_resource_path(os.path.join('engine', 'engine.exe')), os.path.join(project_path, 'engine.exe'))
-    # if answer == 'no':
-    #     shutil.copy(get_resource_path(os.path.join('engine', 'engine.sh')), os.path.join(project_path, 'engine.sh'))
     print("complete:", project_path)
 def deleter(tab, widget_type):
     for widget in tab.winfo_children():
@@ -198,15 +194,30 @@ class TextEditor:
         # file menu
         self.menu_bar = Menu(self.root)
         self.root.config(menu=self.menu_bar)
-        self.code_menu = Menu(self.menu_bar, tearoff=0)
-        # movement
-        self.menu_bar.add_cascade(label=langdata['code3'], menu=self.code_menu)
-        # set xy
-        self.code_menu.add_command(label=langdata['code6'], command=self.xy)
-
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=langdata['file'], menu=self.file_menu)
         self.file_menu.add_command(label=langdata['save'], command=self.save_file)
+        # code menu
+        self.code_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=langdata['code'], menu=self.code_menu)
+        self.movement_menu = Menu(self.code_menu, tearoff=0)
+        self.logic_menu = Menu(self.code_menu, tearoff=0)
+        self.game_menu = Menu(self.code_menu, tearoff=0)
+        # movement
+        self.code_menu.add_cascade(label=langdata['movement'], menu=self.movement_menu)
+        # set xy
+        self.movement_menu.add_command(label=langdata['set_xy'], command=self.xy)
+        # logic
+        self.code_menu.add_cascade(label=langdata['logic'], menu=self.logic_menu)
+        # if statement
+        self.logic_menu.add_command(label=langdata['if'], command=self.if_statement)
+        # system
+        self.code_menu.add_cascade(label=langdata['game'], menu=self.game_menu)
+        # time_sleep
+        self.game_menu.add_command(label=langdata['sleep_time'], command=lambda: self.text_area.insert(INSERT, "time.sleep(1)\n"))
+
+
+
 
     def save_file(self):
         data['sprites'][button_set]['code'] = self.text_area.get("1.0", "end-1c")
@@ -214,17 +225,39 @@ class TextEditor:
     # xy
     def xy(self):
         xytab = Toplevel(self.root)
-        ttk.Label(xytab, text=langdata['sprite_x']).pack()
+        ttk.Label(xytab, text=langdata['x_loc']).pack()
         xentry = ttk.Entry(xytab)
         xentry.pack(anchor='w')
-        ttk.Label(xytab, text=langdata['sprite_y']).pack()
+        ttk.Label(xytab, text=langdata['y_loc']).pack()
         yentry = ttk.Entry(xytab)
         yentry.pack(anchor='w')
-        ttk.Button(xytab, text=langdata['xy3'], command=lambda: self.set_xy(xentry.get(), yentry.get(), xytab)).pack()
+        ttk.Button(xytab, text=langdata['set'], command=lambda: self.set_xy(xentry.get(), yentry.get(), xytab)).pack()
 
     def set_xy(self, x, y, window):
         self.text_area.insert(INSERT, f"{button_set}.set_xy({x}, {y})\n")
         window.destroy()
+    # if statement
+    def if_statement(self):
+        iftab = Toplevel(self.root)
+        iftab.geometry('200x300')
+        ttk.Label(iftab, text=langdata['if']).pack()
+        selected_type = StringVar(value=langdata['key_pressed'])
+        type_button = ttk.Menubutton(iftab, textvariable=selected_type)
+        type_menu = Menu(type_button, tearoff=0)
+        keys = {'K_a': 'A', 'K_b': 'B', 'K_c': 'C', 'K_d': 'D', 'K_e': 'E', 'K_f': 'F', 'K_g': 'G', 'K_h': 'H', 'K_i': 'I', 'K_j': 'J', 'K_k': 'K', 'K_l': 'L', 'K_m': 'M', 'K_n': 'N', 'K_o': 'O', 'K_p': 'P', 'K_q': 'Q', 'K_r': 'R', 'K_s': 'S', 'K_t': 'T', 'K_u': 'U', 'K_v': 'V', 'K_w': 'W', 'K_x': 'X', 'K_y': 'Y', 'K_z': 'Z', 'K_UP': 'Up Arrow', 'K_DOWN': 'Down Arrow', 'K_LEFT': 'Left Arrow', 'K_RIGHT': 'Right Arrow', 'K_SPACE': 'Space', 'K_RETURN': 'Enter', 'K_ESCAPE': 'Escape', 'K_LSHIFT': 'Left Shift', 'K_RSHIFT': 'Right Shift', 'K_LCTRL': 'Left Ctrl', 'K_RCTRL': 'Right Ctrl'}
+        key_submenu = Menu(type_menu, tearoff=0)
+        type_menu.add_cascade(label=langdata['key_pressed'], menu=key_submenu)
+        for code, display in keys.items():
+            key_submenu.add_command(label=display, command=lambda c=code: selected_type.set(f"key_pressed('{c}')"))
+        type_button.config(menu=type_menu)
+        type_button.pack()
+        ttk.Button(iftab, text=langdata['set'], command=lambda: self.add_if_statement(selected_type.get(), iftab)).pack()
+
+    def add_if_statement(self, condition, window):
+        self.text_area.insert(INSERT, f"if {condition}:\n")
+        window.destroy()
+
+        
 
 def save():
     try:
@@ -241,6 +274,23 @@ def lang_select(lang):
         global langdata
         langdata = json.load(f)
 
+def settings():
+    settingtab = Toplevel()
+    settingtab.geometry('200x300')
+    Label(settingtab, text=langdata['language']).pack()
+    for i in os.listdir(get_resource_path('lang')):
+        lang_name = i.split('.')[0]
+        ttk.Button(settingtab, text=lang_name, command=lambda lang=lang_name: set_lang(lang)).pack(anchor='w')
+
+def set_lang(lang):
+    with open(get_resource_path('setting.json'), 'r', encoding='utf-8') as f:
+        settingdata = json.load(f)
+    settingdata['language'] = lang
+    with open(get_resource_path('setting.json'), 'w', encoding='utf-8') as f:
+        json.dump(settingdata, f, indent=4)
+        messagebox.showinfo('Reopen Required', langdata['langchange'])
+
+
 def start_main():
     global root
     root = Tk()
@@ -252,6 +302,7 @@ def start_main():
     editmenu.add_command(label=langdata['new'], command=new_project)
     editmenu.add_command(label=langdata['credit'], command=credit)
     editmenu.add_command(label=langdata['save'], command=save)
+    editmenu.add_command(label=langdata['settings'], command=settings)
     menubar.add_cascade(label=langdata['menu'], menu=editmenu)
     root.config(menu=menubar)
 
