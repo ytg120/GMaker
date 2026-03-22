@@ -33,5 +33,6 @@
     "language":"Language",
     "langchange":"You need to restart the program to change the language.",
     "key_pressed":"Key Pressed",
-    "sleep_time":"Sleep Time"
+    "sleep_time":"Stop Time",
+    "welcome":"Welcome. Do you want to see the tutorial?"
 }

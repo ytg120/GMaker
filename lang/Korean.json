@@ -33,5 +33,6 @@
     "language": "언어",
     "langchange": "언어를 변경하려면 프로그램을 다시 시작해야 합니다.",
     "key_pressed":"키 입력됨",
-    "sleep_time":"시간 정지"
+    "sleep_time":"시간 정지",
+    "welcome":"환영합니다. 튜토리얼을 보시겠습니까?"
 }

@@ -6,6 +6,8 @@ import os
 import json
 import sys
 import shutil
+import locale
+import webbrowser
 
 # get data stuff
 def get_resource_path(filename):
@@ -307,7 +309,22 @@ def start_main():
     root.config(menu=menubar)
 
     root.mainloop()
+
 with open(get_resource_path('setting.json'), 'r', encoding='utf-8') as f:
     settingdata = json.load(f)
-lang_select(settingdata['language'])
+if 'language' not in settingdata or settingdata['language'] == '':
+    settingdata['language'] = locale.getlocale()[0].split('_')[0]
+try:
+    lang_select(settingdata['language'])
+except Exception:
+    lang_select('English')
+
+if settingdata['first_open'] == True:   
+    ask_tutorial = messagebox.askquestion('GMAKER', langdata['welcome'])
+    settingdata['first_open'] = False
+    with open(get_resource_path('setting.json'), 'w', encoding='utf-8') as f:
+        json.dump(settingdata, f, indent=4)
+    if ask_tutorial == 'yes':
+        webbrowser.open('https://ytg120.github.io/GMaker/')
+    
 start_main()
